@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "orderflow-core"
 version = "1.0.0"
-description = "OrderFlow Core — REST API для обработки онлайн-заказов"
+description = "OrderFlow Core вЂ” REST API РґР»СЏ РѕР±СЂР°Р±РѕС‚РєРё РѕРЅР»Р°Р№РЅ-Р·Р°РєР°Р·РѕРІ"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -40,13 +40,13 @@ target-version = "py311"
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "UP", "B", "SIM"]
 ignore = [
-    "B008",  # Depends()/Query() in defaults — идиоматично для FastAPI
+    "B008",  # Depends()/Query() in defaults вЂ” РёРґРёРѕРјР°С‚РёС‡РЅРѕ РґР»СЏ FastAPI
 ]
 
 [tool.mypy]
 python_version = "3.12"
 strict = true
-plugins = ["pydantic.mypy", "sqlalchemy.ext.mypy.plugin"]
+plugins = ["pydantic.mypy"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
