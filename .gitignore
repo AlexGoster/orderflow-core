@@ -1,0 +1,28 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# Virtual envs
+.venv/
+venv/
+
+# Env & secrets
+.env
+*.pem
+*.key
+
+# Coverage
+.coverage
+coverage.xml
+htmlcov/
+
+# Local databases
+*.db
+smoke.db
+
+# IDE
+.idea/
+.vscode/
