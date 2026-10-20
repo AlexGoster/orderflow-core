@@ -3,15 +3,15 @@ from httpx import AsyncClient
 PRODUCT = {"sku": "SKU-100", "name": "Desk Lamp", "price": 1500.0, "stock": 5}
 
 
-async def _create_product(client: AsyncClient) -> int:
-    resp = await client.post("/api/v1/products", json=PRODUCT)
+async def _create_product(client: AsyncClient, admin_headers: dict[str, str]) -> int:
+    resp = await client.post("/api/v1/products", json=PRODUCT, headers=admin_headers)
     return resp.json()["id"]
 
 
 async def test_create_order_and_decrement_stock(
-    client: AsyncClient, auth_headers: dict[str, str]
+    client: AsyncClient, auth_headers: dict[str, str], admin_headers: dict[str, str]
 ) -> None:
-    product_id = await _create_product(client)
+    product_id = await _create_product(client, admin_headers)
 
     resp = await client.post(
         "/api/v1/orders",
@@ -32,8 +32,10 @@ async def test_order_requires_auth(client: AsyncClient) -> None:
     assert resp.status_code in (401, 422)
 
 
-async def test_insufficient_stock(client: AsyncClient, auth_headers: dict[str, str]) -> None:
-    product_id = await _create_product(client)
+async def test_insufficient_stock(
+    client: AsyncClient, auth_headers: dict[str, str], admin_headers: dict[str, str]
+) -> None:
+    product_id = await _create_product(client, admin_headers)
     resp = await client.post(
         "/api/v1/orders",
         headers=auth_headers,
@@ -43,8 +45,10 @@ async def test_insufficient_stock(client: AsyncClient, auth_headers: dict[str, s
     assert resp.json()["error"]["code"] == "insufficient_stock"
 
 
-async def test_list_and_get_order(client: AsyncClient, auth_headers: dict[str, str]) -> None:
-    product_id = await _create_product(client)
+async def test_list_and_get_order(
+    client: AsyncClient, auth_headers: dict[str, str], admin_headers: dict[str, str]
+) -> None:
+    product_id = await _create_product(client, admin_headers)
     created = await client.post(
         "/api/v1/orders",
         headers=auth_headers,
@@ -58,8 +62,10 @@ async def test_list_and_get_order(client: AsyncClient, auth_headers: dict[str, s
     assert got.json()["id"] == order_id
 
 
-async def test_cannot_read_foreign_order(client: AsyncClient, auth_headers: dict[str, str]) -> None:
-    product_id = await _create_product(client)
+async def test_cannot_read_foreign_order(
+    client: AsyncClient, auth_headers: dict[str, str], admin_headers: dict[str, str]
+) -> None:
+    product_id = await _create_product(client, admin_headers)
     created = await client.post(
         "/api/v1/orders",
         headers=auth_headers,

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Path, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
@@ -24,23 +24,25 @@ async def list_orders(
     user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ) -> list[Order]:
-    return await orders_service.list_orders(session, user.id)
+    return await orders_service.list_orders(session, user.id, is_admin=user.is_admin)
 
 
 @router.get("/{order_id}", response_model=OrderRead)
 async def get_order(
-    order_id: int,
+    order_id: int = Path(ge=1, le=2_147_483_647),
     user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ) -> Order:
-    return await orders_service.get_order(session, user.id, order_id)
+    return await orders_service.get_order(session, user.id, order_id, is_admin=user.is_admin)
 
 
 @router.patch("/{order_id}/status", response_model=OrderRead)
 async def change_status(
-    order_id: int,
     new_status: OrderStatus,
+    order_id: int = Path(ge=1, le=2_147_483_647),
     user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ) -> Order:
-    return await orders_service.change_order_status(session, order_id, new_status)
+    return await orders_service.change_order_status(
+        session, user.id, order_id, new_status, is_admin=user.is_admin
+    )

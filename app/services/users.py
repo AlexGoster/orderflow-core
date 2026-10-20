@@ -1,4 +1,5 @@
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import ConflictError, NotFoundError, UnauthorizedError
@@ -7,7 +8,9 @@ from app.models import User
 from app.schemas import Token, UserCreate
 
 
-async def register_user(session: AsyncSession, payload: UserCreate) -> User:
+async def register_user(
+    session: AsyncSession, payload: UserCreate, *, is_admin: bool = False
+) -> User:
     existing = await session.scalar(select(User).where(User.email == payload.email))
     if existing is not None:
         raise ConflictError("Email already registered")
@@ -15,9 +18,16 @@ async def register_user(session: AsyncSession, payload: UserCreate) -> User:
         email=payload.email,
         password_hash=hash_password(payload.password),
         full_name=payload.full_name,
+        is_admin=is_admin,
     )
     session.add(user)
-    await session.commit()
+    try:
+        await session.commit()
+    except IntegrityError:
+        await session.rollback()
+        if await session.scalar(select(User).where(User.email == payload.email)) is not None:
+            raise ConflictError("Email already registered") from None
+        raise
     await session.refresh(user)
     return user
 
