@@ -52,3 +52,6 @@ plugins = ["pydantic.mypy"]
 asyncio_mode = "auto"
 testpaths = ["tests"]
 addopts = "-q --strict-markers"
+
+[tool.coverage.run]
+concurrency = ["greenlet", "thread"]

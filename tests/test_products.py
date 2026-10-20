@@ -3,8 +3,8 @@ from httpx import AsyncClient
 PRODUCT = {"sku": "SKU-1", "name": "Mechanical Keyboard", "price": 4990.0, "stock": 10}
 
 
-async def test_product_crud(client: AsyncClient) -> None:
-    created = await client.post("/api/v1/products", json=PRODUCT)
+async def test_product_crud(client: AsyncClient, admin_headers) -> None:
+    created = await client.post("/api/v1/products", json=PRODUCT, headers=admin_headers)
     assert created.status_code == 201
     product_id = created.json()["id"]
 
@@ -17,9 +17,9 @@ async def test_product_crud(client: AsyncClient) -> None:
     assert fetched.json()["sku"] == "SKU-1"
 
 
-async def test_duplicate_sku_rejected(client: AsyncClient) -> None:
-    await client.post("/api/v1/products", json=PRODUCT)
-    dup = await client.post("/api/v1/products", json=PRODUCT)
+async def test_duplicate_sku_rejected(client: AsyncClient, admin_headers) -> None:
+    await client.post("/api/v1/products", json=PRODUCT, headers=admin_headers)
+    dup = await client.post("/api/v1/products", json=PRODUCT, headers=admin_headers)
     assert dup.status_code == 409
 
 
