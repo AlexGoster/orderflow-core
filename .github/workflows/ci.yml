@@ -9,6 +9,18 @@ on:
 jobs:
   quality:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: orderflow
+          POSTGRES_PASSWORD: ci-test-password
+          POSTGRES_DB: orderflow_suite_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U orderflow -d orderflow_suite_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
       - uses: actions/checkout@v4
 
@@ -34,6 +46,11 @@ jobs:
       - name: Tests with coverage
         run: pytest --cov=app --cov-report=xml --cov-report=term-missing
 
+      - name: PostgreSQL integration tests
+        env:
+          TEST_DATABASE_URL: postgresql+asyncpg://orderflow:ci-test-password@127.0.0.1:5432/orderflow_suite_test
+        run: pytest
+
       - name: Upload coverage
         if: always()
         uses: actions/upload-artifact@v4
@@ -52,9 +69,12 @@ jobs:
 
       - name: Smoke test image
         run: |
-          docker run -d --name api -p 8000:8000 \
-            -e DATABASE_URL=sqlite+aiosqlite:///./smoke.db \
-            orderflow-core:${{ github.sha }}
-          sleep 5
+          docker compose up -d --build --wait
           curl -f http://localhost:8000/health
-          docker logs api
+          curl -f http://localhost:8000/api/v1/products
+
+      - name: Container logs and cleanup
+        if: always()
+        run: |
+          docker compose logs
+          docker compose down -v

@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
@@ -18,6 +19,7 @@ class UserRead(BaseModel):
     email: EmailStr
     full_name: str
     created_at: datetime
+    is_admin: bool
 
 
 class Token(BaseModel):
@@ -28,8 +30,8 @@ class Token(BaseModel):
 class ProductCreate(BaseModel):
     sku: str = Field(min_length=1, max_length=64)
     name: str = Field(min_length=1, max_length=255)
-    price: float = Field(gt=0)
-    stock: int = Field(default=0, ge=0)
+    price: Decimal = Field(gt=0, max_digits=10, decimal_places=2)
+    stock: int = Field(default=0, ge=0, le=2_147_483_647)
 
 
 class ProductRead(BaseModel):
@@ -43,7 +45,7 @@ class ProductRead(BaseModel):
 
 
 class OrderItemCreate(BaseModel):
-    product_id: int
+    product_id: int = Field(gt=0, le=2_147_483_647)
     quantity: int = Field(gt=0, le=1000)
 
 

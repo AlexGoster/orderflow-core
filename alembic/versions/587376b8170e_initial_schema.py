@@ -95,6 +95,7 @@ def downgrade() -> None:
     op.drop_table("order_items")
     op.drop_index(op.f("ix_orders_user_id"), table_name="orders")
     op.drop_table("orders")
+    sa.Enum(name="order_status").drop(op.get_bind(), checkfirst=True)
     op.drop_index(op.f("ix_users_email"), table_name="users")
     op.drop_table("users")
     op.drop_index(op.f("ix_products_sku"), table_name="products")

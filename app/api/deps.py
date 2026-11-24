@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_session
-from app.core.exceptions import UnauthorizedError
+from app.core.exceptions import ForbiddenError, UnauthorizedError
 from app.core.security import decode_access_token
 from app.models import User
 
@@ -20,7 +20,19 @@ async def get_current_user(
     subject = decode_access_token(credentials.credentials)
     if subject is None:
         raise UnauthorizedError("Invalid or expired token")
-    user = await session.scalar(select(User).where(User.id == int(subject)))
+    try:
+        user_id = int(subject)
+    except ValueError:
+        raise UnauthorizedError("Invalid token subject") from None
+    if not 0 < user_id <= 2_147_483_647:
+        raise UnauthorizedError("Invalid token subject")
+    user = await session.scalar(select(User).where(User.id == user_id))
     if user is None:
         raise UnauthorizedError("User no longer exists")
+    return user
+
+
+async def get_admin_user(user: User = Depends(get_current_user)) -> User:
+    if not user.is_admin:
+        raise ForbiddenError("Administrator role required")
     return user

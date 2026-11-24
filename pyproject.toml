@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "orderflow-core"
 version = "1.0.0"
-description = "OrderFlow Core вЂ” REST API РґР»СЏ РѕР±СЂР°Р±РѕС‚РєРё РѕРЅР»Р°Р№РЅ-Р·Р°РєР°Р·РѕРІ"
+description = "OrderFlow Core — REST API для обработки онлайн-заказов"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -52,3 +52,6 @@ plugins = ["pydantic.mypy"]
 asyncio_mode = "auto"
 testpaths = ["tests"]
 addopts = "-q --strict-markers"
+
+[tool.coverage.run]
+concurrency = ["greenlet", "thread"]

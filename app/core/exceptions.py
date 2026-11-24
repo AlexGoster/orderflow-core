@@ -25,6 +25,11 @@ class UnauthorizedError(AppError):
         super().__init__(message, code="unauthorized", status_code=401)
 
 
+class ForbiddenError(AppError):
+    def __init__(self, message: str = "Insufficient permissions"):
+        super().__init__(message, code="forbidden", status_code=403)
+
+
 def register_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(AppError)
     async def app_error_handler(_: Request, exc: AppError) -> JSONResponse:

@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Path, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.deps import get_admin_user
 from app.core.database import get_session
-from app.models import Product
+from app.models import Product, User
 from app.schemas import ProductCreate, ProductRead
 from app.services import products as products_service
 
@@ -19,12 +20,17 @@ async def list_products(
 
 
 @router.get("/{product_id}", response_model=ProductRead)
-async def get_product(product_id: int, session: AsyncSession = Depends(get_session)) -> Product:
+async def get_product(
+    product_id: int = Path(ge=1, le=2_147_483_647),
+    session: AsyncSession = Depends(get_session),
+) -> Product:
     return await products_service.get_product(session, product_id)
 
 
 @router.post("", response_model=ProductRead, status_code=status.HTTP_201_CREATED)
 async def create_product(
-    payload: ProductCreate, session: AsyncSession = Depends(get_session)
+    payload: ProductCreate,
+    _: User = Depends(get_admin_user),
+    session: AsyncSession = Depends(get_session),
 ) -> Product:
     return await products_service.create_product(session, payload)
